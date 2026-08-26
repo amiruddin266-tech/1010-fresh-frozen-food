@@ -1,0 +1,26 @@
+{
+  "name": "1010-fresh-frozen-food",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-ready e-commerce starter for 1010 Fresh Frozen Food",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.10.0",
+    "compression": "^1.8.1",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.0.1",
+    "helmet": "^8.1.0",
+    "nodemailer": "^9.0.5",
+    "qrcode": "^1.5.4",
+    "zod": "^4.0.17"
+  }
+}
