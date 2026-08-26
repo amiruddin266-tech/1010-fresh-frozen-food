@@ -1,1 +1,119 @@
-<!doctype html><html lang="en-MY"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>1010 Fresh Frozen Food | Frozen Chicken Malaysia</title><meta name="description" content="Buy quality frozen chicken from 1010 Fresh Frozen Food. Ayam Kampung, Ayam Kampung Berempah, Ayam Dara, Ayam Teruna and Ayam Bapuk in S to XXL sizes."><link rel="canonical" href="https://your-domain.com/"><meta property="og:title" content="1010 Fresh Frozen Food"><meta property="og:description" content="Fresh frozen chicken in convenient S to XXL sizes."><meta property="og:type" content="website"><link rel="stylesheet" href="/css/style.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"1010 Fresh Frozen Food","url":"https://your-domain.com/","description":"Frozen chicken retailer in Malaysia."}</script></head><body><header><div class="wrap nav"><a class="brand" href="/">1010 <span>Fresh Frozen Food</span></a><button id="cartBtn" class="cart">Cart <b id="cartCount">0</b></button></div></header><main><section class="hero wrap"><div><p class="eyebrow">FRESH • FROZEN • READY TO COOK</p><h1>Quality frozen chicken for your everyday kitchen.</h1><p>Choose your chicken, select the size and pay securely through Billplz — or scan the checkout QR.</p><a href="#products" class="btn">Shop chicken</a></div><div class="hero-card">🐔<strong>5 chicken choices</strong><span>S · M · L · XL · XXL</span></div></section><section id="products" class="wrap"><div class="section-head"><div><p class="eyebrow">OUR PRODUCTS</p><h2>Pick your chicken</h2></div><span id="productCount"></span></div><div id="productGrid" class="grid"></div></section></main><div id="drawer" class="drawer hidden"><div class="drawer-panel"><button id="closeCart" class="close">×</button><h2>Your cart</h2><div id="cartItems"></div><div class="total"><span>Total</span><strong id="cartTotal">RM 0.00</strong></div><button id="checkoutBtn" class="btn full">Checkout</button></div></div><div id="checkout" class="modal hidden"><div class="modal-card"><button id="closeCheckout" class="close">×</button><h2>Delivery & payment</h2><form id="checkoutForm"><div class="form-grid"><label>Name<input name="customerName" required maxlength="100"></label><label>Email<input name="email" type="email" required></label><label>WhatsApp / Phone<input name="phone" placeholder="+60123456789" required></label><label>Postcode<input name="postcode" inputmode="numeric" pattern="\d{5}" required></label><label>City<input name="city" required></label><label>State<input name="state" value="Selangor" required></label></div><label>Delivery address<textarea name="address" required></textarea></label><label>Notes (optional)<textarea name="notes"></textarea></label><div id="checkoutError" class="error"></div><button class="btn full" type="submit">Create secure payment</button></form></div></div><div id="payment" class="modal hidden"><div class="modal-card center"><h2>Payment ready</h2><p id="paymentText"></p><img id="qr" alt="QR code for Billplz payment"><a id="payLink" class="btn full" target="_blank" rel="noopener">Open Billplz payment</a><button id="donePayment" class="btn secondary full">I've opened payment</button></div></div><footer><div class="wrap"><strong>1010 Fresh Frozen Food</strong><p>Frozen chicken made simple.</p></div></footer><script src="/js/app.js" defer></script></body></html>
+<!doctype html>
+<html lang="en-MY">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>1010 Fresh Frozen Food | Frozen Chicken Malaysia</title>
+        <meta name="description" content="Buy quality frozen chicken from 1010 Fresh Frozen Food. Ayam Kampung, Ayam Kampung Berempah, Ayam Dara, Ayam Teruna and Ayam Bapuk in S to XXL sizes.">
+        <link rel="canonical" href="https://your-domain.com/">
+        <meta property="og:title" content="1010 Fresh Frozen Food">
+        <meta property="og:description" content="Fresh frozen chicken in convenient S to XXL sizes.">
+        <meta property="og:type" content="website"><link rel="stylesheet" href="/css/style.css">
+        <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"1010 Fresh Frozen Food","url":"https://your-domain.com/","description":"Frozen chicken retailer in Malaysia."}</script>
+        <style>.size-guide{padding-top:10px}.size-guide-table-wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:16px}.size-guide-table{width:100%;border-collapse:collapse;text-align:left}.size-guide-table th,.size-guide-table td{padding:14px 18px;border-bottom:1px solid var(--line)}.size-guide-table th{color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.08em}.size-guide-table tr:last-child td{border-bottom:0}.size-guide-table td:first-child{font-weight:900;color:var(--accent2)}@media(max-width:600px){.size-guide-table th,.size-guide-table td{padding:12px 14px;font-size:.9rem}}</style>
+        <style>.product h3{color:#fff;background:var(--accent2);padding:8px 10px;border-radius:8px}</style>
+        <style>.brand{display:flex;align-items:center;gap:10px;white-space:nowrap;min-width:0}.brand img{flex-shrink:0}.brand>span{white-space:nowrap;color:var(--ink);font-size:1.1rem;font-weight:900}@media(max-width:600px){.brand{font-size:1rem;gap:6px}.brand img{max-width:150px;height:40px}.brand>span{font-size:.85rem}}</style>
+        <style>.delivery-method{border:1px solid var(--line);border-radius:12px;padding:14px;margin:0 0 16px}.delivery-method legend{font-size:.75rem;font-weight:900;color:var(--accent);letter-spacing:.1em}.delivery-method label{display:block;margin:8px 0}.pickup-choice{padding-left:24px;font-size:.9rem;color:var(--muted)}.order-summary{border-top:1px solid var(--line);margin-top:18px;padding-top:12px}.order-summary div{display:flex;justify-content:space-between;padding:5px 0}.order-summary div:last-of-type{font-size:1.1rem;font-weight:900}.order-summary p{color:var(--accent2);font-size:.9rem;font-weight:700;margin:8px 0 0}</style>
+        <style>.delivery-method label{display:flex;align-items:center;gap:8px;margin:8px 0}.delivery-method input[type="radio"]{display:inline-block;width:auto;margin:0;flex:0 0 auto}.delivery-method .pickup-choice{padding-left:24px}</style>
+    </head>
+    <body>
+        <header>
+            <div class="wrap nav">
+                <a class="brand" href="/" aria-label="1010 Fresh Frozen Food">
+                    <img src="/images/logo.jpg" alt="1010 Fresh Frozen Food logo" style="height:48px;width:auto;max-width:220px;object-fit:contain" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+                    <span>1010 Fresh Frozen Food</span>
+                </a><button id="cartBtn" class="cart">Cart <b id="cartCount">0</b></button>
+            </div>
+        </header>
+        <main>
+            <section class="hero wrap">
+                <div>
+                    <p class="eyebrow">FRESH • FROZEN • READY TO COOK</p>
+                    <h1>1010 Fresh Frozen Food</h1>
+                    <p>Quality frozen chicken for your everyday kitchen. Choose your chicken, select the size and pay securely through Billplz or scan the checkout QR.</p>
+                    <a href="#products" class="btn">Shop chicken</a>
+                </div>
+                <div class="hero-card">🐔<strong>6 chicken sizes</strong>
+                    <span>S · M · M2 · L · L2 . XL</span>
+                </div>
+            </section>
+            <section id="products" class="wrap">
+                <div class="section-head"><div>
+                    <p class="eyebrow">OUR PRODUCTS</p>
+                    <h2>Pick your chicken</h2>
+                </div>
+                <span id="productCount"></span>
+            </div>
+            <div id="productGrid" class="grid"></div>
+        </section>
+        <section class="size-guide wrap" id="size-guide">
+            <div class="section-head"><div>
+                <p class="eyebrow">SIZE GUIDE</p>
+                <h2>Choose your chicken size</h2>
+            </div>
+            <span>1 ekor / pack</span></div>
+            <div class="size-guide-table-wrap"><table class="size-guide-table"><thead><tr><th>Size</th><th>Weight</th><th>Pack</th></tr></thead><tbody>
+                <tr><td>S</td><td>1.0–1.1 kg</td><td>1 ekor / pack</td></tr>
+                <tr><td>M</td><td>1.1–1.2 kg</td><td>1 ekor / pack</td></tr>
+                <tr><td>M2</td><td>1.3–1.4 kg</td><td>1 ekor / pack</td></tr>
+                <tr><td>L</td><td>1.5–1.6 kg</td><td>1 ekor / pack</td></tr>
+                <tr><td>L2</td><td>1.7–1.8 kg</td><td>1 ekor / pack</td></tr>
+                <tr><td>XL</td><td>1.9–2.0 kg</td><td>1 ekor / pack</td></tr>
+            </tbody></table></div>
+        </section>
+    </main>
+    <div id="drawer" class="drawer hidden">
+        <div class="drawer-panel">
+            <button id="closeCart" class="close">×</button><h2>Your cart</h2>
+            <div id="cartItems"></div>
+            <div class="total">
+                <span>Total</span>
+                <strong id="cartTotal">RM 0.00</strong>
+            </div>
+            <button id="checkoutBtn" class="btn full">Checkout</button>
+        </div>
+    </div>
+    <div id="checkout" class="modal hidden">
+        <div class="modal-card">
+            <button id="closeCheckout" class="close">×</button><h2>Delivery & payment</h2>
+            <form id="checkoutForm">
+                <fieldset class="delivery-method"><legend>DELIVERY METHOD</legend>
+                    <label> PICKUP LOCATIONS</label>
+                    <label class="pickup-choice"><input type="radio" name="deliveryChoice" value="kuala_terengganu" checked> Kuala Terengganu — Near SMK Sri Nilam</label>
+                    <label class="pickup-choice"><input type="radio" name="deliveryChoice" value="kuala_berang"> Kuala Berang — Kampung Langgar</label>
+                    <label><input type="radio" name="deliveryChoice" value="delivery"> DELIVERY TO MY ADDRESS</label>
+                </fieldset>
+                <div class="form-grid"><label>Name<input name="customerName" required maxlength="100"></label>
+                    <label>Email<input name="email" type="email" required></label>
+                    <label>WhatsApp / Phone<input name="phone" placeholder="+60123456789" required></label>
+                    <label class="address-field">Postcode<input name="postcode" inputmode="numeric" pattern="\d{5}"></label>
+                    <label class="address-field">City<input name="city"></label>
+                    <label class="address-field">State<input name="state" value="Selangor"></label>
+                </div>
+                <label class="address-field">Delivery address<textarea name="address"></textarea></label>
+                <label>Notes (optional)<textarea name="notes"></textarea></label><div id="checkoutError" class="error"></div>
+                <div class="order-summary"><div><span>Subtotal</span><strong id="checkoutSubtotal">RM 0.00</strong></div><div><span>Delivery</span><strong id="checkoutDelivery">FREE PICKUP</strong></div><div><span>Total</span><strong id="checkoutTotal">RM 0.00</strong></div><p id="deliveryMessage"></p></div>
+                <button class="btn full" type="submit">Create secure payment</button>
+            </form>
+        </div>
+    </div>
+    <div id="payment" class="modal hidden">
+        <div class="modal-card center">
+            <h2>Payment ready</h2>
+            <p id="paymentText"></p>
+            <img id="qr" alt="QR code for Billplz payment">
+            <a id="payLink" class="btn full" target="_blank" rel="noopener">Open Billplz payment</a>
+            <button id="donePayment" class="btn secondary full">I've opened payment</button>
+        </div>
+    </div>
+    <a class="whatsapp-float" href="https://wa.me/60197070571?text=Hi%201010%20Fresh%20Frozen%20Food%2C%20I%20would%20like%20to%20ask%20about%20your%20products." target="_blank" rel="noopener" aria-label="Chat with us on WhatsApp" title="Chat with us on WhatsApp" style="position:fixed;right:24px;bottom:24px;z-index:20;background:#25d366;color:#fff;padding:14px 18px;border-radius:999px;font-weight:800;text-decoration:none;box-shadow:0 8px 24px #18201830">WhatsApp</a>
+    <footer>
+        <div class="wrap">
+            <strong>1010 Fresh Frozen Food</strong>
+            <p>Frozen chicken made simple.</p>
+        </div>
+    </footer>
+    <script src="/js/app.js?v=20260826-delivery" defer>
+    </script>
+    </body>
+    </html>

@@ -9,6 +9,7 @@ import {PRODUCTS,SIZE_RANGES,getProduct} from './products.js';
 import {createOrder,getOrderById,getOrderByNo,setBill,markPaid,markNotificationSent,listOrders} from './db.js';
 import {createBill,verifyXSignature} from './billplz.js';
 import {sendNotifications} from './notifications.js';
+import {calculateDeliveryFee,calculateRoadDistance,getPickupLocations} from './delivery.js';
 
 const app=express();
 app.set('trust proxy',1);
@@ -20,13 +21,28 @@ app.use(rateLimit({windowMs:15*60*1000,limit:300,standardHeaders:true,legacyHead
 app.use(express.static('public',{maxAge:'1h'}));
 
 app.get('/api/products',(req,res)=>res.json({products:PRODUCTS.map(p=>({...p,sizeRanges:SIZE_RANGES}))}));
-const checkoutSchema=z.object({customerName:z.string().trim().min(2).max(100),email:z.string().trim().email().max(254),phone:z.string().trim().regex(/^\+?60\d{8,11}$/,'Use a Malaysian phone number, e.g. +60123456789'),address:z.string().trim().min(5).max(500),city:z.string().trim().min(2).max(80),postcode:z.string().trim().regex(/^\d{5}$/),state:z.string().trim().min(2).max(50),notes:z.string().trim().max(500).optional(),items:z.array(z.object({productId:z.string(),size:z.enum(['S','M','L','XL','XXL']),quantity:z.number().int().min(1).max(20)})).min(1).max(30)});
+const itemSchema=z.object({productId:z.string(),size:z.enum(['S','M','M2','L','L2','XL']),quantity:z.number().int().min(1).max(20)});
+const checkoutSchema=z.object({customerName:z.string().trim().min(2).max(100).optional(),email:z.string().trim().email().max(254).optional(),phone:z.string().trim().regex(/^\+?60\d{8,11}$/,'Use a Malaysian phone number, e.g. +60123456789').optional(),address:z.string().trim().max(500).optional(),city:z.string().trim().max(80).optional(),postcode:z.string().trim().regex(/^\d{5}$/).or(z.literal('')).optional(),state:z.string().trim().max(50).optional(),notes:z.string().trim().max(500).optional(),deliveryMethod:z.enum(['pickup','delivery']),pickupLocation:z.enum(['kuala_terengganu','kuala_berang']).optional(),items:z.array(itemSchema).min(1).max(30)});
+function getItemsAndSubtotal(items){
+ const pricedItems=[]; let subtotalCents=0;
+ for(const line of items){const p=getProduct(line.productId);if(!p)throw new Error('Invalid product');const unitPriceCents=p.prices[line.size]*100;const lineTotalCents=unitPriceCents*line.quantity;subtotalCents+=lineTotalCents;pricedItems.push({productId:p.id,productName:p.name,size:line.size,weightRange:SIZE_RANGES[line.size],quantity:line.quantity,unitPriceCents,lineTotalCents});}
+ return {pricedItems,subtotalCents};
+}
+async function calculatePricing(input){
+ const {pricedItems,subtotalCents}=getItemsAndSubtotal(input.items);let distanceKm=null;let address=input.address||'';
+ if(input.deliveryMethod==='pickup'){const locations=getPickupLocations();if(!input.pickupLocation)throw new Error('Please select a pickup point');address=locations[input.pickupLocation];}
+ else {if(!input.address||!input.city||!input.postcode||!input.state)throw new Error('Please complete your delivery address');try{distanceKm=await calculateRoadDistance({address:`${input.address}, ${input.city}, ${input.state}, Malaysia`,postcode:input.postcode});}catch{throw new Error("We couldn't calculate your delivery fee. Please contact us.");}}
+ const fee=calculateDeliveryFee({subtotal:subtotalCents/100,distanceKm,deliveryMethod:input.deliveryMethod,pickupLocation:input.pickupLocation});
+ if(fee.deliveryFee===null)throw new Error(fee.message);
+ return {pricedItems,subtotalCents,distanceKm,deliveryFeeCents:fee.deliveryFee*100,totalCents:subtotalCents+fee.deliveryFee*100,deliveryZone:fee.deliveryZone,isFree:fee.isFree,message:fee.message,address};
+}
+
+app.post('/api/delivery/quote',async(req,res)=>{try{const input=checkoutSchema.pick({deliveryMethod:true,pickupLocation:true,address:true,city:true,postcode:true,state:true,items:true}).parse(req.body);const pricing=await calculatePricing(input);res.json({subtotalCents:pricing.subtotalCents,deliveryFeeCents:pricing.deliveryFeeCents,totalCents:pricing.totalCents,distanceKm:pricing.distanceKm,deliveryZone:pricing.deliveryZone,isFree:pricing.isFree,message:pricing.message});}catch(e){res.status(400).json({error:e.message||'We could not calculate your delivery fee.'});}});
 
 app.post('/api/orders',async(req,res)=>{
  try{
-  const input=checkoutSchema.parse(req.body); const items=[]; let total=0;
-  for(const line of input.items){const p=getProduct(line.productId); if(!p) throw new Error('Invalid product'); const unit=p.prices[line.size]*100; const lineTotal=unit*line.quantity; total+=lineTotal; items.push({productId:p.id,productName:p.name,size:line.size,weightRange:SIZE_RANGES[line.size],quantity:line.quantity,unitPriceCents:unit,lineTotalCents:lineTotal});}
-  const order=createOrder({...input,totalCents:total},items);
+    const input=checkoutSchema.parse(req.body);if(!input.customerName||!input.email||!input.phone)throw new Error('Please complete your customer details');const pricing=await calculatePricing(input);
+    const order=createOrder({...input,address:pricing.address,city:input.city||'Pickup',postcode:input.postcode||'00000',state:input.state||'Terengganu',subtotalCents:pricing.subtotalCents,deliveryMethod:input.deliveryMethod,pickupLocation:input.deliveryMethod==='pickup'?input.pickupLocation:null,distanceKm:pricing.distanceKm,deliveryFeeCents:pricing.deliveryFeeCents,totalCents:pricing.totalCents},pricing.pricedItems);
   if(!process.env.BILLPLZ_SECRET_KEY||!process.env.BILLPLZ_COLLECTION_ID) throw new Error('Payment gateway is not configured.');
   const bill=await createBill({name:order.customer_name,email:order.email,mobile:order.phone,amountCents:order.total_cents,description:`1010 Fresh Frozen Food ${order.order_no}`,reference:order.order_no});
   setBill(order.id,bill.id,bill.url);

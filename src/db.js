@@ -44,11 +44,23 @@ CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(payment_status);
 `);
 
+const orderColumns = db.prepare('PRAGMA table_info(orders)').all().map(column => column.name);
+const orderMigrations = {
+ subtotal_cents: 'INTEGER NOT NULL DEFAULT 0',
+ delivery_method: "TEXT NOT NULL DEFAULT 'delivery'",
+ pickup_location: 'TEXT',
+ distance_km: 'REAL',
+ delivery_fee_cents: 'INTEGER NOT NULL DEFAULT 0'
+};
+for (const [column, definition] of Object.entries(orderMigrations)) {
+ if (!orderColumns.includes(column)) db.exec(`ALTER TABLE orders ADD COLUMN ${column} ${definition}`);
+}
+
 export function createOrder(data, items){
  const orderNo = `1010-${new Date().toISOString().slice(0,10).replaceAll('-','')}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
  const now = new Date().toISOString();
  const insert = db.transaction(()=>{
-  const r=db.prepare(`INSERT INTO orders(order_no,status,payment_status,customer_name,email,phone,address,city,postcode,state,notes,total_cents,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(orderNo,'pending','pending',data.customerName,data.email,data.phone,data.address,data.city,data.postcode,data.state,data.notes||null,data.totalCents,now);
+    const r=db.prepare(`INSERT INTO orders(order_no,status,payment_status,customer_name,email,phone,address,city,postcode,state,notes,subtotal_cents,delivery_method,pickup_location,distance_km,delivery_fee_cents,total_cents,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(orderNo,'pending','pending',data.customerName,data.email,data.phone,data.address,data.city,data.postcode,data.state,data.notes||null,data.subtotalCents,data.deliveryMethod,data.pickupLocation||null,data.distanceKm??null,data.deliveryFeeCents,data.totalCents,now);
   const stmt=db.prepare(`INSERT INTO order_items(order_id,product_id,product_name,size,weight_range,quantity,unit_price_cents,line_total_cents) VALUES(?,?,?,?,?,?,?,?)`);
   for(const i of items) stmt.run(r.lastInsertRowid,i.productId,i.productName,i.size,i.weightRange,i.quantity,i.unitPriceCents,i.lineTotalCents);
   return Number(r.lastInsertRowid);
